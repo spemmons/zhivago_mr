@@ -2,7 +2,7 @@
 require 'rubygems'
 require 'wukong/script'
 
-module Shivago
+module Zhivago
 
   class Mapper < Wukong::Streamer::LineStreamer
 
@@ -71,18 +71,18 @@ module Shivago
       CSV.parse(line) do |tokens|
         case tokens[0]
           when 'a'
-            note_typed_list(:account,name: tokens[1],&block)
+            note_typed_list(:account,:name => tokens[1],&block)
           when 'e'
-            note_typed_list(:event,name: tokens[1],gateway_index: tokens[2].to_i,&block)
+            note_typed_list(:event,:name => tokens[1],:gateway_index => tokens[2].to_i,&block)
           when 'g'
-            note_typed_list(:gateway,name: tokens[1],&block)
+            note_typed_list(:gateway,:name => tokens[1],&block)
           when 'd'
-            note_typed_list(:device,name: tokens[1],imei: tokens[2],acount_index: tokens[3].to_i,gateway_index: tokens[4].to_i,&block)
+            note_typed_list(:device,:name => tokens[1],:imei => tokens[2],:acount_index => tokens[3].to_i,:gateway_index => tokens[4].to_i,&block)
           when 'r'
             if tokens[7].blank? or (created_at = Time.parse("#{tokens[7]} #{@timezone}").utc) < DATE_TOO_OLD or created_at > DATE_TOO_NEW
               log "invalid date: #{tokens[7]}"
             else
-              set_state_and_call_block(:reading,device_index: tokens[1].to_i,event_index: tokens[2].to_i,latitude: tokens[3],longitude: tokens[4],ignition: tokens[5],speed: tokens[6],created_at: created_at,&block)
+              set_state_and_call_block(:reading,:device_index => tokens[1].to_i,:event_index => tokens[2].to_i,:latitude => tokens[3],:longitude => tokens[4],:ignition => tokens[5],:speed => tokens[6],:created_at => created_at,&block)
             end
           when 'f'
             #log "final reading ID:#{tokens[1]}"
@@ -114,4 +114,4 @@ module Shivago
 
 end
 
-Wukong.run(Shivago::Mapper,Shivago::Reducer)
+Wukong.run(Zhivago::Mapper,Zhivago::Reducer)
