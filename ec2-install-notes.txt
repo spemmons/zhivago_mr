@@ -1,0 +1,14 @@
+# had to load ruby gems
+wget http://rubyforge.org/frs/download.php/75475/rubygems-1.8.11.tgz
+tar -xzf rubygems-1.8.11.tgz
+cd rubygems-1.8.11
+sudo ruby setup.rb
+
+# later found /usr/bin/gem1.8 -- was this installed by me??
+sudo ln -n /usr/bin/gem1.8 /usr/bin/gem
+
+# installed wukong
+sudo apt-get install build-essential libopenssl-ruby ruby1.8-dev
+sudo gem install wukong --source=http://gemcutter.org --no-rdoc --no-ri
+
+# failure -- missing mkmf
