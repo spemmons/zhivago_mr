@@ -1,0 +1,5 @@
+this is an example of
+a text file that has
+several words, only a few
+of which are repeated
+and that is that
