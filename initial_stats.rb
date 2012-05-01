@@ -2,18 +2,19 @@
 require 'rubygems'
 require 'wukong/script'
 
-module Zhivago
+module InitialStats
 
   class Mapper < Wukong::Streamer::LineStreamer
 
     def initialize
-      @parser = Parser.new('PDT')
+      @parser = ZhivagoParser.new('PDT')
     end
 
     def process(line)
       @parser.each_type(:reading,line) do
         latitude,longitude = @parser[:latitude].to_f,@parser[:longitude].to_f
-        yield [format('%0.5f,%0.5f',latitude,longitude),@parser[:ignition],@parser[:speed]] unless latitude == 0.0 and longitude == 0.0
+        # 3 digits of precision = ~200'-400'
+        yield [format('%0.3f,%0.3f',latitude,longitude),@parser[:ignition],@parser[:speed]] unless latitude == 0.0 and longitude == 0.0
       end
     end
 
@@ -45,7 +46,9 @@ module Zhivago
 
   end
 
-  class Parser
+  # TODO figure out how to keep the following in a separate file -- in the meantime, carefully propogate changes
+
+  class ZhivagoParser
 
     require 'csv'
 
@@ -68,6 +71,7 @@ module Zhivago
     end
 
     def each(line,&block)
+      @line_number += 1
       CSV.parse(line) do |tokens|
         case tokens[0]
           when 'a'
@@ -77,7 +81,7 @@ module Zhivago
           when 'g'
             note_typed_list(:gateway,:name => tokens[1],&block)
           when 'd'
-            note_typed_list(:device,:name => tokens[1],:imei => tokens[2],:acount_index => tokens[3].to_i,:gateway_index => tokens[4].to_i,&block)
+            note_typed_list(:device,:name => tokens[1],:imei => tokens[2],:account_index => tokens[3].to_i,:gateway_index => tokens[4].to_i,&block)
           when 'r'
             if tokens[7].blank? or (created_at = Time.parse("#{tokens[7]} #{@timezone}").utc) < DATE_TOO_OLD or created_at > DATE_TOO_NEW
               log "invalid date: #{tokens[7]}"
@@ -94,6 +98,8 @@ module Zhivago
             end
         end
       end
+    rescue
+      log "unexpected error: #{$!}"
     end
 
     def note_typed_list(type,attributes,&block)
@@ -107,11 +113,11 @@ module Zhivago
     end
 
     def log(output)
-      logger.info "[#{@line_number} - #{output}"
+      logger.info "#{@line_number} - #{output}"
     end
 
   end
 
 end
 
-Wukong.run(Zhivago::Mapper,Zhivago::Reducer)
+Wukong.run(InitialStats::Mapper,InitialStats::Reducer)
