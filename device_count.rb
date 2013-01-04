@@ -8,7 +8,9 @@ module DeviceCount
 
     def process(*args)
       imei,type,first_location,second_location,remainder = *args
-      yield [imei,1]
+      #yield [imei,1]
+      splits = imei.split(',')
+      yield [splits.first,1]
     end
   end
 
